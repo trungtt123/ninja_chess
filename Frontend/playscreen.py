@@ -2,7 +2,6 @@ from os import stat
 import pygame
 from pygame import draw
 import button
-import button_1
 import random
 import chess
 import sys
