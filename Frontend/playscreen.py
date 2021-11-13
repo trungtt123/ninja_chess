@@ -178,8 +178,9 @@ class PlayScreen():
             print(board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing)))
             w_win = board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing))
             b_win = board.is_attacked_by(chess.BLACK, chess.parse_square(whiteKing))
-            if (w_win == True): return True
-            if (b_win == True): return False
+            if (w_win == True): return 1 # white win
+            if (b_win == True): return 2 # black win
+            return 0 # draw
 
         # game loop
         
@@ -203,7 +204,6 @@ class PlayScreen():
         turn = 'WHITE'
         state = 0 # - 1 phong tướng, 0 khác th phong tướng
         legal_moves = []
-        
         while (running):
             
             if (turn == 'BLACK' and board.is_game_over() == False):
@@ -271,15 +271,15 @@ class PlayScreen():
                     if (board.is_game_over()): 
                         moves = list(board.legal_moves)
 
-                        if (moves == []):
+                        if (moves == [] and get_win_or_lose(board) == 0):
                             screen.blit(draw, (60, 180))
                             running = False
                             break
 
-                        if (get_win_or_lose(board)): 
+                        if (get_win_or_lose(board) == 1): 
                             screen.blit(win, (40, 150))
                             
-                        else: 
+                        if (get_win_or_lose(board) == 2): 
                             screen.blit(lose, (40, 150))
                         running = False
                         break    
