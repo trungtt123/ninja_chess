@@ -7,8 +7,8 @@ import chess
 import sys
 
 sys.path.append('../Backend')
+import chessai #import backend
 
-import chessai
 # create display window
 
 
@@ -95,6 +95,8 @@ class PlayScreen():
         win = pygame.transform.scale(win, (498, 243)) 
         lose =  pygame.image.load('../images/chess/lose.png').convert_alpha()
         lose = pygame.transform.scale(lose, (498, 243)) 
+        draw =  pygame.image.load('../images/chess/draw.png').convert_alpha()
+        draw = pygame.transform.scale(draw, (450, 180)) 
         #update board
         def update_board(board, moves):
             color = []
@@ -174,13 +176,10 @@ class PlayScreen():
             
             print(blackKing, whiteKing)
             print(board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing)))
-
-            if (board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing)) and board.is_game_over()):
-                return True
-            if (board.is_attacked_by(chess.BLACK, chess.parse_square(whiteKing)) and board.is_game_over()):
-                return False
-            return False
-
+            w_win = board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing))
+            b_win = board.is_attacked_by(chess.BLACK, chess.parse_square(whiteKing))
+            if (w_win == True): return True
+            if (b_win == True): return False
 
         # game loop
         
@@ -270,16 +269,23 @@ class PlayScreen():
                         else: chess_board_img = update_board(board, [])
                     if (state == 0): screen.blit(chess_board_img, (30, 50))
                     if (board.is_game_over()): 
-                        #print(get_win_or_lose(board))
+                        moves = list(board.legal_moves)
+
+                        if (moves == []):
+                            screen.blit(draw, (60, 180))
+                            running = False
+                            break
+
                         if (get_win_or_lose(board)): 
                             screen.blit(win, (40, 150))
-                            running = False
+                            
                         else: 
                             screen.blit(lose, (40, 150))
-                            running = False
+                        running = False
                         break    
+                        
             pygame.display.update()
             if (running == False): 
-                pygame.time.delay(2000)
+                pygame.time.delay(3000)
                 return 'PLAY_SCREEN'
     pygame.quit()
