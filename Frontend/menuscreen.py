@@ -12,9 +12,9 @@ class MenuScreen():
         
 
         # load button menu
-        start_img = pygame.image.load('../images/button/play.png').convert_alpha()
-        option_img = pygame.image.load('../images/button/option.png').convert_alpha()
-        exit_img = pygame.image.load('../images/button/exit.png').convert_alpha()
+        start_img = pygame.image.load('images/button/play.png').convert_alpha()
+        option_img = pygame.image.load('images/button/option.png').convert_alpha()
+        exit_img = pygame.image.load('images/button/exit.png').convert_alpha()
 
 
         # create button munu
