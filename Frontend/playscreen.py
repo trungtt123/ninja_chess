@@ -1,19 +1,26 @@
+from os import stat
 import pygame
 from pygame import draw
 import button
+import button_1
 import random
 import chess
-import chessai
-import time
+import sys
 
+sys.path.append('../Backend')
+
+import chessai
 # create display window
 
-# board = chess.Board()
+
 class PlayScreen():
     def run():
-        board = chess.Board()
         SCREEN_HEIGHT = 600
         SCREEN_WIDTH = 1000
+        board = chess.Board()
+        #cursor = pygame.cursors.compile(pygame.cursors.sizer_x_strings)
+        #cursor, mask = pygame.cursors.compile(pygame.cursors.broken_x_strings)
+        #pygame.mouse.set_cursor((24, 16), (7, 11), *cursor)
         positionPiece = {
             'a8': (5, 5), 'b8': (65, 5), 'c8': (125, 5), 'd8': (185, 5), 'e8': (245, 5), 'f8': (305, 5), 'g8': (365, 5), 'h8': (425, 5),
             'a7': (5, 65), 'b7': (65, 65), 'c7': (125, 65), 'd7': (185, 65), 'e7': (245, 65), 'f7': (305, 65), 'g7': (365, 65), 'h7': (425, 65),
@@ -28,54 +35,79 @@ class PlayScreen():
 
 
         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-        pygame.display.set_caption('Chess AI')
-
+        
         #load piece
         #----------black piece-------------
-        blackKing = pygame.image.load('images/chess/Chess_Pieces_Green/King/King_shadow.png').convert_alpha()
+        blackKing = pygame.image.load('../images/chess/Chess_Pieces_Green/King/King_shadow.png').convert_alpha()
         blackKing = pygame.transform.scale(blackKing, (70, 70))
 
-        blackQueen = pygame.image.load('images/chess/Chess_Pieces_Green/Queen/Queen_shadow.png').convert_alpha()
+        blackQueen = pygame.image.load('../images/chess/Chess_Pieces_Green/Queen/Queen_shadow.png').convert_alpha()
         blackQueen = pygame.transform.scale(blackQueen, (70, 70))
 
-        blackBishop = pygame.image.load('images/chess/Chess_Pieces_Green/Bishop/Bishop_shadow.png').convert_alpha()
+        blackBishop = pygame.image.load('../images/chess/Chess_Pieces_Green/Bishop/Bishop_shadow.png').convert_alpha()
         blackBishop = pygame.transform.scale(blackBishop, (70, 70))
 
-        blackKnight = pygame.image.load('images/chess/Chess_Pieces_Green/Knight/Knight_shadow.png').convert_alpha()
+        blackKnight = pygame.image.load('../images/chess/Chess_Pieces_Green/Knight/Knight_shadow.png').convert_alpha()
         blackKnight = pygame.transform.scale(blackKnight, (70, 70))
         
-        blackRook = pygame.image.load('images/chess/Chess_Pieces_Green/Rook/Rook_shadow.png').convert_alpha()
+        blackRook = pygame.image.load('../images/chess/Chess_Pieces_Green/Rook/Rook_shadow.png').convert_alpha()
         blackRook = pygame.transform.scale(blackRook, (70, 70))
         
-        blackPawn = pygame.image.load('images/chess/Chess_Pieces_Green/Pawn/Pawn_shadow.png').convert_alpha()
+        blackPawn = pygame.image.load('../images/chess/Chess_Pieces_Green/Pawn/Pawn_shadow.png').convert_alpha()
         blackPawn = pygame.transform.scale(blackPawn, (70, 70))
 
         #-----------white piece----------------
 
 
-        whiteKing = pygame.image.load('images/chess/Chess_Pieces_Golden/King/King_shadow.png').convert_alpha()
+        whiteKing = pygame.image.load('../images/chess/Chess_Pieces_Golden/King/King_shadow.png').convert_alpha()
         whiteKing = pygame.transform.scale(whiteKing, (70, 70))
 
-        whiteQueen = pygame.image.load('images/chess/Chess_Pieces_Golden/Queen/Queen_shadow.png').convert_alpha()
+        whiteQueen = pygame.image.load('../images/chess/Chess_Pieces_Golden/Queen/Queen_shadow.png').convert_alpha()
         whiteQueen = pygame.transform.scale(whiteQueen, (70, 70))
+        btnQueen = pygame.image.load('../images/chess/Chess_Pieces_Golden/Queen/Queen_shadow.png').convert_alpha()
 
-        whiteBishop = pygame.image.load('images/chess/Chess_Pieces_Golden/Bishop/Bishop_shadow.png').convert_alpha()
+        whiteBishop = pygame.image.load('../images/chess/Chess_Pieces_Golden/Bishop/Bishop_shadow.png').convert_alpha()
         whiteBishop = pygame.transform.scale(whiteBishop, (70, 70))
-
-        whiteKnight = pygame.image.load('images/chess/Chess_Pieces_Golden/Knight/Knight_shadow.png').convert_alpha()
+        btnBishop = pygame.image.load('../images/chess/Chess_Pieces_Golden/Bishop/Bishop_shadow.png').convert_alpha()
+        
+        whiteKnight = pygame.image.load('../images/chess/Chess_Pieces_Golden/Knight/Knight_shadow.png').convert_alpha()
         whiteKnight = pygame.transform.scale(whiteKnight, (70, 70))
-        
-        whiteRook = pygame.image.load('images/chess/Chess_Pieces_Golden/Rook/Rook_shadow.png').convert_alpha()
+        btnKnight = pygame.image.load('../images/chess/Chess_Pieces_Golden/Knight/Knight_shadow.png').convert_alpha()
+
+        whiteRook = pygame.image.load('../images/chess/Chess_Pieces_Golden/Rook/Rook_shadow.png').convert_alpha()
         whiteRook = pygame.transform.scale(whiteRook, (70, 70))
-        
-        whitePawn = pygame.image.load('images/chess/Chess_Pieces_Golden/Pawn/Pawn_shadow.png').convert_alpha()
+        btnRook = pygame.image.load('../images/chess/Chess_Pieces_Golden/Rook/Rook_shadow.png').convert_alpha()
+
+        whitePawn = pygame.image.load('../images/chess/Chess_Pieces_Golden/Pawn/Pawn_shadow.png').convert_alpha()
         whitePawn = pygame.transform.scale(whitePawn, (70, 70))
 
-        #update board
+        #box opacity
+        boxOpacityYellowC = pygame.image.load('../images/chess/Chess_board/box_opacity_yellow_c.png').convert_alpha()
+        boxOpacityYellowC = pygame.transform.scale(boxOpacityYellowC, (70, 70)) 
+        boxOpacityYellow = pygame.image.load('../images/chess/Chess_board/box_opacity_yellow.png').convert_alpha()
+        boxOpacityYellow = pygame.transform.scale(boxOpacityYellow, (70, 70)) 
+        boxOpacityRed = pygame.image.load('../images/chess/Chess_board/box_opacity_red_c.png').convert_alpha()
+        boxOpacityRed = pygame.transform.scale(boxOpacityRed, (70, 70)) 
 
-        def update_board(board):
-            chess_board_img = pygame.image.load('images/chess/Chess_board/Chessboard.png').convert_alpha()
+        boxLevel = pygame.image.load('../images/chess/Chess_board/board-phong-tuong-fix.png').convert_alpha()
+        boxLevel = pygame.transform.scale(boxLevel, (250, 250)) 
+        
+        win =  pygame.image.load('../images/chess/win.png').convert_alpha()
+        win = pygame.transform.scale(win, (498, 243)) 
+        lose =  pygame.image.load('../images/chess/lose.png').convert_alpha()
+        lose = pygame.transform.scale(lose, (498, 243)) 
+        #update board
+        def update_board(board, moves):
+            color = []
+            chess_board_img = pygame.image.load('../images/chess/Chess_board/Chessboard.png').convert_alpha()
             chess_board_img = pygame.transform.scale(chess_board_img, (500, 500))
+            
+            if (moves != []):
+                piece = str(board.piece_at(chess.parse_square(str(moves[0])[0:2])))
+                chess_board_img.blit(boxOpacityYellow, (positionPiece[str(moves[0])[0:2]][0], positionPiece[str(moves[0])[0:2]][1]))
+            
+            
+            # draw board
             for i in range(97, 105):
                 for j in range(1, 9):
                     pos = chr(i) + str(j)
@@ -104,7 +136,16 @@ class PlayScreen():
                         chess_board_img.blit(whiteRook, (positionPiece[pos][0], positionPiece[pos][1]))
                     if (piece == 'r'):
                         chess_board_img.blit(blackRook, (positionPiece[pos][0], positionPiece[pos][1]))
-       
+            for move in moves:
+                if str(move)[2:4] not in color: 
+                    color.append(str(move)[2:4])
+                else: 
+                    continue
+                piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
+                if (piece == 'None'):
+                    chess_board_img.blit(boxOpacityYellowC, (positionPiece[str(move)[2:4]][0], positionPiece[str(move)[2:4]][1]))
+                else: 
+                    chess_board_img.blit(boxOpacityRed, (positionPiece[str(move)[2:4]][0], positionPiece[str(move)[2:4]][1]))  
             return chess_board_img
 
         def get_legal_move(board, pos):
@@ -112,68 +153,134 @@ class PlayScreen():
             moves = board.legal_moves
             
             for move in moves:
-                print(move, pos)
-                if (str(move)[0:2] == pos): cur.append(move)
+                #print(move, pos)
+                if (str(move)[0:2] == pos): 
+                    cur.append(move)
+            #print(cur)
             return cur
-        
+        def get_win_or_lose(board):
+    
+            whiteKing = ''
+            blackKing = ''
+    
+            for i in range(97, 105):
+                for j in range(1, 9):
+                    pos = chr(i) + str(j)
+                    piece = str(board.piece_at(chess.parse_square(pos)))
+
+                    if (piece == 'K'):
+                        whiteKing = pos
+                    if (piece == 'k'):
+                        blackKing = pos
+            
+            print(blackKing, whiteKing)
+            print(board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing)))
+
+            if (board.is_attacked_by(chess.WHITE, chess.parse_square(blackKing)) and board.is_game_over()):
+                return True
+            if (board.is_attacked_by(chess.BLACK, chess.parse_square(whiteKing)) and board.is_game_over()):
+                return False
+            return False
+
+
         # game loop
         
-        chess_board_img = update_board(board)
+
+        chess_board_img = update_board(board, [])
         screen.fill((202, 228, 241))
         screen.blit(chess_board_img, (30, 50))
+        
+        btnQueen = button.Button(20 , 140, btnQueen, 0.12)
+        
+
+        btnBishop = button.Button(70 , 140, btnBishop, 0.12)
+        
+
+        btnRook = button.Button(120 , 140, btnRook, 0.12)
+        
+
+        btnKnight = button.Button(170 , 140, btnKnight, 0.12)
+        
         running = True
-        yourturn = True
-        cnt = 0
-        state = 0 # trạng thái bàn cờ
-        # 0 - người chơi không làm gì
-        # 1 - người chơi đang chọn nước
+        turn = 'WHITE'
+        state = 0 # - 1 phong tướng, 0 khác th phong tướng
+        legal_moves = []
+        
         while (running):
-            if(cnt > 79 and board.is_game_over() == 0):
-                print('DRAW GAME!')
-                running = False
             
-            if(yourturn == False):
-                depth = random.randrange(3,5)
-                move = chessai.minimax(board=board, depth=depth, alpha=0, beta=500, maximizing_player=True)[0]
+            if (turn == 'BLACK' and board.is_game_over() == False):
+                move = chessai.Solve().get_ai_move(board)
                 board.push(move)
-                cnt +=1
-                chess_board_img = update_board(board)
-                screen.blit(chess_board_img, (30, 50)) 
-                yourturn = True
-                pygame.display.update()
+                turn = 'WHITE'
+                chess_board_img = update_board(board, [])
+                screen.blit(chess_board_img, (30, 50))
+                continue
+            
+            for event in pygame.event.get():
+                
 
-            else:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        running = False
-                    if event.type == pygame.MOUSEBUTTONDOWN:
-
+                if event.type == pygame.QUIT:
+                    #running = False
+                    pygame.quit()
+                
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     
-                    #if (board.is_game_over()): continue
-                        moves = list(board.legal_moves)
-                        move = random.choice(moves)
-                        board.push(move)
-                        cnt += 1
-                    
-                    #----
-                        
-                        pos_x = pygame.mouse.get_pos()[0]
-                        pos_y = pygame.mouse.get_pos()[1]
-                        x = int ((pos_x - 40) / 60) + 1
-                        y = 8 - int ((pos_y - 60) / 60) 
-                        if (1 <= x <= 8 and 1 <= y <= 8): 
-                            pos = chr(x+96) +  str(y)
-                            selectedChess = board.piece_at(int(chess.parse_square(pos)))
-                            if (str(selectedChess).isupper()): 
-                                moves = get_legal_move(board, pos)
-                                if (moves != []): print(moves)
-                        
+                    pos_x = pygame.mouse.get_pos()[0]
+                    pos_y = pygame.mouse.get_pos()[1]
 
-                        chess_board_img = update_board(board)
-                        screen.blit(chess_board_img, (30, 50))  
-                        yourturn = False
-                        pygame.display.update()
+
+                    if (state == 1):
+                        chrTxt = ''
+                        if (190 <= pos_x <= 215 and 308 <= pos_y <= 343): chrTxt = 'q'
+                        if (234 <= pos_x <= 263 and 308 <= pos_y <= 343): chrTxt = 'r'
+                        if (282 <= pos_x <= 312 and 308 <= pos_y <= 343): chrTxt = 'n'
+                        if (330 <= pos_x <= 363 and 308 <= pos_y <= 343): chrTxt = 'b'
+                        print(chrTxt)
+                        print(legal_moves)
+                        for move in legal_moves:
+                            if (len(str(move)) == 5 and str(move)[4] == chrTxt): 
+                                board.push(move)
+                                turn = 'BLACK'
+                                legal_moves = []
+                                state = 0
+                                break
+
+                    x = int ((pos_x - 40) / 60) + 1
+                    y = 8 - int ((pos_y - 60) / 60) 
+                    if (1 <= x <= 8 and 1 <= y <= 8): 
+                        pos = chr(x+96) +  str(y)
+                        selectedChess = board.piece_at(int(chess.parse_square(pos)))
+                        if (turn == 'WHITE'):
+                            for move in legal_moves:
+                                if (len(str(move)) == 4):
+                                    if (str(move)[2:4] == pos): 
+                                        turn = 'BLACK'
+                                        board.push(move)
+                                        chess_board_img = update_board(board, [])
+                                        legal_moves = []
+                                        break
+                                if (len(str(move)) == 5):
+                                    if (str(move)[2:4] == pos):
+                                        screen.blit(boxLevel, (150, 150)) 
+                                        state = 1
+                                        break
+                        if (str(selectedChess).isupper() and turn == 'WHITE'): 
+                            legal_moves = get_legal_move(board, pos)
+                            
+                            chess_board_img = update_board(board, legal_moves)
+                        else: chess_board_img = update_board(board, [])
+                    if (state == 0): screen.blit(chess_board_img, (30, 50))
+                    if (board.is_game_over()): 
+                        #print(get_win_or_lose(board))
+                        if (get_win_or_lose(board)): 
+                            screen.blit(win, (40, 150))
+                            running = False
+                        else: 
+                            screen.blit(lose, (40, 150))
+                            running = False
+                        break    
             pygame.display.update()
+            if (running == False): 
+                pygame.time.delay(2000)
+                return 'PLAY_SCREEN'
     pygame.quit()
-
-    
