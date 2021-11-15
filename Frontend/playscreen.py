@@ -204,8 +204,9 @@ class PlayScreen():
         turn = 'WHITE'
         state = 0 # - 1 phong tướng, 0 khác th phong tướng
         legal_moves = []
-        while (running):
-            
+        #while (running):
+
+        """
             if (turn == 'BLACK' and board.is_game_over() == False):
                 move = chessai.Solve().get_ai_move(board)
                 board.push(move)
@@ -214,79 +215,109 @@ class PlayScreen():
                 chess_board_img = update_board(board, [])
                 screen.blit(chess_board_img, (30, 50))
                 continue
+        """
+        #     if (turn == 'BLACK' and board.is_game_over() == False):
+        #         move = chessai.Solve().get_ai_move(board)
+        #         board.push(move)
+        #         turn = 'WHITE'
+        #         chess_board_img = update_board(board, [])
+        #         screen.blit(chess_board_img, (30, 50))
+        #         continue
+
             
-            for event in pygame.event.get():
+        #     for event in pygame.event.get():
                 
 
-                if event.type == pygame.QUIT:
-                    #running = False
-                    pygame.quit()
+        #         if event.type == pygame.QUIT:
+        #             #running = False
+        #             pygame.quit()
                 
-                if event.type == pygame.MOUSEBUTTONDOWN:
+        #         if event.type == pygame.MOUSEBUTTONDOWN:
                     
-                    pos_x = pygame.mouse.get_pos()[0]
-                    pos_y = pygame.mouse.get_pos()[1]
+        #             pos_x = pygame.mouse.get_pos()[0]
+        #             pos_y = pygame.mouse.get_pos()[1]
 
 
-                    if (state == 1):
-                        chrTxt = ''
-                        if (190 <= pos_x <= 215 and 308 <= pos_y <= 343): chrTxt = 'q'
-                        if (234 <= pos_x <= 263 and 308 <= pos_y <= 343): chrTxt = 'r'
-                        if (282 <= pos_x <= 312 and 308 <= pos_y <= 343): chrTxt = 'n'
-                        if (330 <= pos_x <= 363 and 308 <= pos_y <= 343): chrTxt = 'b'
-                        print(chrTxt)
-                        print(legal_moves)
-                        for move in legal_moves:
-                            if (len(str(move)) == 5 and str(move)[4] == chrTxt): 
-                                board.push(move)
-                                turn = 'BLACK'
-                                legal_moves = []
-                                state = 0
-                                break
+        #             if (state == 1):
+        #                 chrTxt = ''
+        #                 if (190 <= pos_x <= 215 and 308 <= pos_y <= 343): chrTxt = 'q'
+        #                 if (234 <= pos_x <= 263 and 308 <= pos_y <= 343): chrTxt = 'r'
+        #                 if (282 <= pos_x <= 312 and 308 <= pos_y <= 343): chrTxt = 'n'
+        #                 if (330 <= pos_x <= 363 and 308 <= pos_y <= 343): chrTxt = 'b'
+        #                 print(chrTxt)
+        #                 print(legal_moves)
+        #                 for move in legal_moves:
+        #                     if (len(str(move)) == 5 and str(move)[4] == chrTxt): 
+        #                         board.push(move)
+        #                         turn = 'BLACK'
+        #                         legal_moves = []
+        #                         state = 0
+        #                         break
 
-                    x = int ((pos_x - 40) / 60) + 1
-                    y = 8 - int ((pos_y - 60) / 60) 
-                    if (1 <= x <= 8 and 1 <= y <= 8): 
-                        pos = chr(x+96) +  str(y)
-                        selectedChess = board.piece_at(int(chess.parse_square(pos)))
-                        if (turn == 'WHITE'):
-                            for move in legal_moves:
-                                if (len(str(move)) == 4):
-                                    if (str(move)[2:4] == pos): 
-                                        turn = 'BLACK'
-                                        board.push(move)
-                                        chess_board_img = update_board(board, [])
-                                        legal_moves = []
-                                        break
-                                if (len(str(move)) == 5):
-                                    if (str(move)[2:4] == pos):
-                                        screen.blit(boxLevel, (150, 150)) 
-                                        state = 1
-                                        break
-                        if (str(selectedChess).isupper() and turn == 'WHITE'): 
-                            legal_moves = get_legal_move(board, pos)
+        #             x = int ((pos_x - 40) / 60) + 1
+        #             y = 8 - int ((pos_y - 60) / 60) 
+        #             if (1 <= x <= 8 and 1 <= y <= 8): 
+        #                 pos = chr(x+96) +  str(y)
+        #                 selectedChess = board.piece_at(int(chess.parse_square(pos)))
+        #                 if (turn == 'WHITE'):
+        #                     for move in legal_moves:
+        #                         if (len(str(move)) == 4):
+        #                             if (str(move)[2:4] == pos): 
+        #                                 turn = 'BLACK'
+        #                                 board.push(move)
+        #                                 chess_board_img = update_board(board, [])
+        #                                 legal_moves = []
+        #                                 break
+        #                         if (len(str(move)) == 5):
+        #                             if (str(move)[2:4] == pos):
+        #                                 screen.blit(boxLevel, (150, 150)) 
+        #                                 state = 1
+        #                                 break
+        #                 if (str(selectedChess).isupper() and turn == 'WHITE'): 
+        #                     legal_moves = get_legal_move(board, pos)
                             
-                            chess_board_img = update_board(board, legal_moves)
-                        else: chess_board_img = update_board(board, [])
-                    if (state == 0): screen.blit(chess_board_img, (30, 50))
-                    if (board.is_game_over()): 
-                        moves = list(board.legal_moves)
+        #                     chess_board_img = update_board(board, legal_moves)
+        #                 else: chess_board_img = update_board(board, [])
+        #             if (state == 0): screen.blit(chess_board_img, (30, 50))
+        #             if (board.is_game_over()): 
+        #                 moves = list(board.legal_moves)
 
-                        if (moves == [] and get_win_or_lose(board) == 0):
-                            screen.blit(draw, (60, 180))
-                            running = False
-                            break
+        #                 if (moves == [] and get_win_or_lose(board) == 0):
+        #                     screen.blit(draw, (60, 180))
+        #                     running = False
+        #                     break
 
-                        if (get_win_or_lose(board) == 1): 
-                            screen.blit(win, (40, 150))
+        #                 if (get_win_or_lose(board) == 1): 
+        #                     screen.blit(win, (40, 150))
                             
-                        if (get_win_or_lose(board) == 2): 
-                            screen.blit(lose, (40, 150))
-                        running = False
-                        break    
+        #                 if (get_win_or_lose(board) == 2): 
+        #                     screen.blit(lose, (40, 150))
+        #                 running = False
+        #                 break    
                         
+        #     pygame.display.update()
+        #     if (running == False): 
+        #         pygame.time.delay(3000)
+        #         return 'PLAY_SCREEN'
+            # ai solo ai
+        while (running):
+            for event in pygame.event.get(): 
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if (list(board.legal_moves) == []):
+                        print('game over')
+                        continue
+                    if (turn == "WHITE"):
+                        move = random.choice(list(board.legal_moves)) # gọi AI_1
+                        board.push(move)
+                        turn = "BLACK"
+                    else:
+                        move = random.choice(list(board.legal_moves)) # gọi AI_2
+                        board.push(move)
+                        turn = "BLACK"
+                    chess_board_img = update_board(board, [])
+                    screen.blit(chess_board_img, (30, 50))
+                if event.type == pygame.QUIT:
+                    running = False
+                    pygame.quit()
             pygame.display.update()
-            if (running == False): 
-                pygame.time.delay(3000)
-                return 'PLAY_SCREEN'
     pygame.quit()
