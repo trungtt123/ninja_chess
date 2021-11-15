@@ -209,6 +209,7 @@ class PlayScreen():
             if (turn == 'BLACK' and board.is_game_over() == False):
                 move = chessai.Solve().get_ai_move(board)
                 board.push(move)
+                #legal_moves = board.legal_moves
                 turn = 'WHITE'
                 chess_board_img = update_board(board, [])
                 screen.blit(chess_board_img, (30, 50))
