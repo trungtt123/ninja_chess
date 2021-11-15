@@ -29,7 +29,7 @@ class Button():
 
 		#draw button on screen
 		surface.blit(self.image, (self.rect.x, self.rect.y))
-
+		self.clicked = False
 		return action
 		
 	

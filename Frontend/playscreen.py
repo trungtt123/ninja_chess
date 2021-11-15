@@ -403,7 +403,7 @@ class PlayScreen():
                                         screen.blit(boxLevel, (150, 150)) 
                                         state = 1
                                         break
-                        if (str(selectedChess).isupper() and turn == 'WHITE'): 
+                        if (str(selectedChess).isupper() and turn == 'WHITE' and state == 0): 
                             legal_moves = get_legal_move(board, pos)
                             
                             chess_board_img = update_board(board, legal_moves)
