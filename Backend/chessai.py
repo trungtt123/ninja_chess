@@ -1,11 +1,71 @@
 import random
 import chess
 import numpy
+import tensorflow.keras.models as models
+import tensorflow
+
+# with arg_scope([layers.conv2d], activation_fn=self.activation_fn, data_format="NCHW"), \
+# arg_scope([layers.fully_connected], activation_fn=self.activation_fn):
+#with arg_scope([layers.conv2d], activation_fn=self.activation_fn, data_format="NHWC"), \
+#        arg_scope([layers.fully_connected], activation_fn=self.activation_fn):
+
+model = models.load_model("D:/PythonProject/ninja_chess/Backend/model.h5")
+with tensorflow.device('/cpu:0'):
+    model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['acc'])
+
+squares_index = {
+        'a': 0,
+        'b': 1,
+        'c': 2,
+        'd': 3,
+        'e': 4,
+        'f': 5,
+        'g': 6,
+        'h': 7
+    }
 
 class Solve ():
+    # example: h3 -> 17
+    def square_to_index(self, board):
+        letter = chess.square_name(board)
+        return 8 - int(letter[1]), squares_index[letter[0]]
+
+    def split_dims(self, board):
+        # this is the 3d matrix
+        board3d = numpy.zeros((14, 8, 8), dtype=numpy.int8)
+
+        # here we add the pieces's view on the matrix
+        for piece in chess.PIECE_TYPES:
+            for square in board.pieces(piece, chess.WHITE):
+                idx = numpy.unravel_index(square, (8, 8))
+                board3d[piece - 1][7 - idx[0]][idx[1]] = 1
+            for square in board.pieces(piece, chess.BLACK):
+                idx = numpy.unravel_index(square, (8, 8))
+                board3d[piece + 5][7 - idx[0]][idx[1]] = 1
+
+        # add attacks and valid moves too
+        # so the network knows what is being attacked
+        aux = board.turn
+        board.turn = chess.WHITE
+        for move in board.legal_moves:
+            i, j = self.square_to_index(move.to_square)
+            board3d[12][i][j] = 1
+        board.turn = chess.BLACK
+        for move in board.legal_moves:
+            i, j = self.square_to_index(move.to_square)
+            board3d[13][i][j] = 1
+        board.turn = aux
+
+        return board3d
+
+    def evaluate_DL(self, board):
+        board3d = self.split_dims(board)
+        board3d = numpy.expand_dims(board3d, 0)
+        return model.predict(board3d)[0][0]
+
     def get_ai_move(self, board):
-        depth = random.randrange(3,6)
-        return self.minimax(board, depth, 0, 5000, True)[0]
+        depth = random.randrange(1,2)
+        return self.minimax(board, depth, -5000, 5000, False)[0]
 
     def whiteScore(self, board):
         S = 0
@@ -40,7 +100,7 @@ class Solve ():
 
     def minimax(self, board, depth, alpha, beta, maximizing_player):
         if depth == 0 or board.is_game_over():
-            return None, self.evaluate(board)
+            return None, self.evaluate_DL(board)
 
         if maximizing_player == True:
             max_eval = -numpy.inf
@@ -82,6 +142,27 @@ class Solve ():
                 if beta <= alpha:
                     break
             return best_move, min_eval
+"""
+def random_board(max_depth=200):
+  board = chess.Board()
+  depth = random.randrange(0, max_depth)
+
+  for _ in range(depth):
+    all_moves = list(board.legal_moves)
+    random_move = random.choice(all_moves)
+    board.push(random_move)
+    if board.is_game_over():
+      break
+
+  return board
 
 
-
+board = random_board()
+print(board)
+s = Solve()
+board3d = s.split_dims(board)
+print(board3d), print()
+board3d = numpy.expand_dims(board3d, 0)
+#print(board3d)
+print(model.predict(board3d))
+"""
