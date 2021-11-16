@@ -10,7 +10,6 @@ currentScreen = 'MENU_SCREEN'
 
 
 while (currentScreen != 'EXIT'):
-    
     if (currentScreen == 'MENU_SCREEN'): 
         currentScreen = menuscreen.MenuScreen.run()
     if (currentScreen == 'PLAY_SCREEN'): 
