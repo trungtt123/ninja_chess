@@ -1,6 +1,8 @@
 import random
 import chess
 import numpy
+import time
+import pygame
 # import tensorflow.keras.models as models
 # import tensorflow
 
@@ -27,7 +29,9 @@ import numpy
 class Solve ():
     # example: h3 -> 17
     def get_ai_move(seft, board):
-        return random.choice(list(board.legal_moves))
+      time.sleep(2)
+        #for i in range(1, 100000000): a = 1
+      return random.choice(list(board.legal_moves))
     # def square_to_index(self, board):
     #     letter = chess.square_name(board)
     #     return 8 - int(letter[1]), squares_index[letter[0]]

@@ -8,6 +8,9 @@ import sys
 from threading import Thread
 import threading
 import time
+import json
+import datetime
+import concurrent.futures
 
 sys.path.append('../Backend')
 import chessai #import backend
@@ -15,8 +18,12 @@ import chessai #import backend
 # create display window
 
 class PlayScreen():
-   
+
     def run():   
+        f = open('option.json', mode="r")
+        
+        data = json.load(f)
+        f.close()
         pygame.init()
         board = chess.Board()
         print(chess.Board())
@@ -24,6 +31,15 @@ class PlayScreen():
         SCREEN_WIDTH = 1000
         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
+
+        #audio 
+        pygame.mixer.init()
+        moveSound = pygame.mixer.Sound('../audio/move.mp3')
+        winSound = pygame.mixer.Sound('../audio/win.wav')
+        loseSound = pygame.mixer.Sound('../audio/lose.wav')
+        goodSound = pygame.mixer.Sound('../audio/good.mp3')
+        badSound = pygame.mixer.Sound('../audio/bad.mp3')
+        winSound.set_volume(0.6)
         #cursor = pygame.cursors.compile(pygame.cursors.sizer_x_strings)
         #cursor, mask = pygame.cursors.compile(pygame.cursors.broken_x_strings)
         #pygame.mouse.set_cursor((24, 16), (7, 11), *cursor)
@@ -125,11 +141,14 @@ class PlayScreen():
         btnUndo = pygame.image.load('../images/button/undo_move.png').convert_alpha()
         btnUndo = pygame.transform.scale(btnUndo, (80, 80)) 
 
+        btnBack_img = pygame.image.load('../images/button/arrow_back.png').convert_alpha()
+        btnBack_img = pygame.transform.scale(btnBack_img, (35, 25))
+
         btnWhite = pygame.image.load('../images/button/9_yellow.png').convert_alpha()
         btnWhite =  pygame.transform.scale(btnWhite, (100, 100)) 
         btnBlack = pygame.image.load('../images/button/9_green.png').convert_alpha()
         btnBlack =  pygame.transform.scale(btnBlack, (100, 100)) 
-        
+        btnBack = button.Button(-1, 5, btnBack_img, 1)
 
         btnUndoDisable = pygame.image.load('../images/button/undo_move_disable.png').convert_alpha()
         btnUndoDisable = pygame.transform.scale(btnUndoDisable, (50, 50)) 
@@ -140,7 +159,7 @@ class PlayScreen():
         boxConfirm = pygame.image.load('../images/chess/Chess_board/confirm.png').convert_alpha()
         boxConfirm = pygame.transform.scale(boxConfirm, (300, 200)) 
         myClock = pygame.image.load('../images/chess/clock.png').convert_alpha()
-        myClock = pygame.transform.scale(myClock, (150, 45)) 
+        myClock = pygame.transform.scale(myClock, (120, 35)) 
 
 
         win =  pygame.image.load('../images/chess/win.png').convert_alpha()
@@ -149,6 +168,7 @@ class PlayScreen():
         lose = pygame.transform.scale(lose, (498, 243)) 
         draw =  pygame.image.load('../images/chess/draw.png').convert_alpha()
         draw = pygame.transform.scale(draw, (450, 180)) 
+
         #update board
         def update_box_contain(loot_piece, firstTurn):
             boxContain = pygame.image.load('../images/chess/Chess_board/contain.png').convert_alpha()
@@ -231,7 +251,7 @@ class PlayScreen():
 
         
         def update_board_black(board, moves):
-            print(board)
+            #print(board)
             color = []
             chess_board_img = pygame.image.load('../images/chess/Chess_board/Chessboard.png').convert_alpha()
 
@@ -326,7 +346,9 @@ class PlayScreen():
 
         btnBlack = button.Button(530, 190, btnBlack, 0.8)
         firstTurn = 'None'
-        
+        turn = 'WHITE'
+
+
         while (firstTurn == 'None'):
             
 
@@ -336,6 +358,8 @@ class PlayScreen():
                 screen.fill((202, 228, 241))
                 
                 screen.blit(boxConfirm, (360, 100))
+                if (btnBack.draw(screen)):
+                    return 'MENU_SCREEN'
                 if (btnWhite.draw(screen)):
                     firstTurn = 'WHITE'
                 if (btnBlack.draw(screen)):
@@ -368,72 +392,106 @@ class PlayScreen():
         btnUndo.draw(screen)
 
         
-
+       
         running = True
 
-        font = pygame.font.Font('freesansbold.ttf', 17)
-        def solve_clock():
-            hours = 0
-            minutes = 0
-            secs = 0
-            while (running == True):
-                #screen.blit(myClock, (700, 50))
-                secs += 1
-                if (secs == 60): 
-                    secs = 0
-                    minutes += 1
-                    if (minutes == 60): 
-                        minutes = 0
-                        hours += 1
-                
-                if (0 <= secs <= 9): secs = '0' + str(secs) 
-                if (0 <= minutes <= 9): minutes = '0' + str(minutes)
-                if (0 <= hours <= 9): hours = '0' + str(hours)
-
-
-                
-                clock = font.render(str(hours) + ":" + str(minutes) + ":" + str(secs), True, 'black')
-                secs = int(secs)
-                minutes = int(minutes)
-                hours = int(hours)
-                
-               # screen.fill((202, 228, 241))
-                pygame.draw.rect(screen,(202, 228, 241),(610, 0, 610, 100))
-                #myClock.blit(clock, (10, 30))
-                screen.blit(myClock, (700, 50))
-                screen.blit(clock, (766, 66))
-                time.sleep(1)
-                #screen.blit(myClock, (700, 50))
-            #else: return
-        t1 = threading.Thread(target=solve_clock)
-        t1.start()
-         
+        font = pygame.font.Font('freesansbold.ttf', 15)
+        def get_ai_move(board):
+            return chessai.Solve().get_ai_move(board)
         
+        def get_time_after_1s(seconds):
+            seconds -= 1
+            hours = int (seconds / 3600)
+            minutes = int ((seconds - hours * 3600) / 60)
+            secs = seconds - hours * 3600 - minutes * 60 
+            
+            if (0 <= secs <= 9): secs = '0' + str(secs) 
+            if (0 <= minutes <= 9): minutes = '0' + str(minutes)
+            if (0 <= hours <= 9): hours = '0' + str(hours)
+            return str(hours) + ":" + str(minutes) + ":" + str(secs)
+        resultByTime = -1
+        def solve_clock(m):
+            m1 = m
+            m2 = m
+            
+            global resultByTime
+
+            while (running == True):
+                clock1 = font.render(get_time_after_1s(m1), True, 'black')
+                clock2 = font.render(get_time_after_1s(m2), True, 'black')
+                #print(turn)
+                if (turn == firstTurn): m1 -= 1
+                else: m2 -= 1 
+                 
+                
+                pygame.draw.rect(screen,(202, 228, 241),(610, 0, 610, 100))
+             
+                screen.blit(myClock, (620, 50))
+
+                screen.blit(clock1, (670, 64))
+
+                screen.blit(myClock, (820, 50))
+
+                screen.blit(clock2, (870, 64))
+                
+                pygame.display.update()
+                
+                print(m1, m2)
+                if m2 == 0: 
+                    return 1
+                if m1 == 0: 
+                    print('abc')
+                    return 0 
+                time.sleep(1)               
+            return -1
+       
+        t1 = None
+        if (data['Time']): t1 = concurrent.futures.ThreadPoolExecutor().submit(solve_clock, data['LimitTime'] + 1)
+       
         state = 0 # - 1 phong tướng, 0 khác th phong tướng
         legal_moves = []
         loot_piece = [[],[]]
-        turn = 'WHITE'
+        
         
         if (firstTurn == 'BLACK'): 
-            print('abc')
             chess_board_img = update_board_black(board, [])
             screen.blit(chess_board_img, (30, 50))
+            pygame.display.update()
             while (running):
-                
+                pygame.draw.rect(screen,(202, 228, 241),(0, 0, 50, 50))
+                if (data['Time'] and t1.running() == False):
+                    if (t1.result() == 1):
+                        screen.blit(win, (40, 150))
+                        winSound.play()
+                        
+                    if (t1.result() == 0):
+                        screen.blit(lose, (40, 150))
+                        loseSound.play()
+                    running = False
+                    pygame.display.update()
+                    pygame.time.delay(5000)
+                    return 'PLAY_SCREEN'
+                    
+                if (btnBack.draw(screen)):
+                    running = False
+                    return 'MENU_SCREEN'
+                pygame.display.update()
                 if (turn == 'WHITE' and board.is_game_over() == False):
-
+                    #time.sleep(1)
                     move = chessai.Solve().get_ai_move(board)
+                    
                 
                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                     if (piece != 'None'): 
                         if (piece.isupper()): loot_piece[0].append(piece)
                         else: loot_piece[1].append(piece)
                     board.push(move)
-                    
+                    moveSound.play()
+                    #if (board.is_checkmate()): badSound.play()
                     turn = 'BLACK'
 
                     #screen.fill((202, 228, 241))
-                    pygame.draw.rect(screen,(202, 228, 241),(0,0,610,800))
+                    pygame.draw.rect(screen,(202, 228, 241),(25,25,590,800))
                     pygame.draw.rect(screen,(202, 228, 241),(610, 150, 1000, 800))
                     chess_board_img = update_board_black(board, [])
                     
@@ -484,6 +542,8 @@ class PlayScreen():
                                         if (piece.isupper()): loot_piece[0].append(piece)
                                         else: loot_piece[1].append(piece)
                                     board.push(move)
+                                    moveSound.play()
+                                    #if (board.is_checkmate()): goodSound.play()
                                     turn = 'WHITE'
                                     legal_moves = []
                                     state = 0
@@ -510,6 +570,8 @@ class PlayScreen():
                                                 if (piece.isupper()): loot_piece[0].append(piece)
                                                 else: loot_piece[1].append(piece)
                                             board.push(move)
+                                            moveSound.play()
+                                            #if (board.is_checkmate()): goodSound.play()
                                             chess_board_img = update_board_black(board, [])
                                             legal_moves = []
                                             break
@@ -528,7 +590,7 @@ class PlayScreen():
                         if (state == 0): 
                             
                             #screen.fill((202, 228, 241))
-                            pygame.draw.rect(screen,(202, 228, 241),(0,0,610,800))
+                            pygame.draw.rect(screen,(202, 228, 241),(25,25,590,700))
                             pygame.draw.rect(screen,(202, 228, 241),(610, 150, 1000, 800))
                             if (btnUndo.draw(screen)): 
                                 try:
@@ -546,6 +608,7 @@ class PlayScreen():
                             boxContain = update_box_contain(loot_piece, firstTurn)
                             screen.blit(boxContain, (580, 150))
                             screen.blit(chess_board_img, (30, 50))
+
                         
                         
                         if (board.is_game_over()): 
@@ -553,19 +616,19 @@ class PlayScreen():
 
                             if (moves == [] and get_win_or_lose(board, firstTurn) == 0):
                                 screen.blit(draw, (60, 180))
+                                winSound.play()
                                 running = False
                                 break
 
                             if (get_win_or_lose(board, firstTurn) == 1): 
                                 screen.blit(win, (40, 150))
+                                winSound.play()
                                 
                             if (get_win_or_lose(board, firstTurn) == 2): 
                                 screen.blit(lose, (40, 150))
+                                loseSound.play()
                             running = False
                             break   
-
-                        
-                        
                 pygame.display.update()
                 if (running == False): 
                     pygame.time.delay(5000)
@@ -573,24 +636,46 @@ class PlayScreen():
         else: 
             chess_board_img = update_board_white(board, [])
             screen.blit(chess_board_img, (30, 50))
+            pygame.display.update()
             while (running):
+                if (data['Time'] and t1.running() == False):
+                    if (t1.result() == 1):
+                        screen.blit(win, (40, 150))
+                        winSound.play()
+                        
+                    if (t1.result() == 0):
+                        screen.blit(lose, (40, 150))
+                        loseSound.play()
+                    running = False
+                    pygame.display.update()
+                    pygame.time.delay(5000)
+                    return 'PLAY_SCREEN'
+                pygame.draw.rect(screen,(202, 228, 241),(0, 0, 50, 50))
                 
+                if (btnBack.draw(screen)):
+                    running = False
+                    return 'MENU_SCREEN'
+                pygame.display.update()
                 if (turn == 'BLACK' and board.is_game_over() == False):
                     
                     # ----------CALL AI-----------
-                    move = chessai.Solve().get_ai_move(board)
-                
+                    move = chessai.Solve().get_ai_move(board)  
+
                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                     if (piece != 'None'): 
                         if (piece.isupper()): loot_piece[0].append(piece)
                         else: loot_piece[1].append(piece)
                     board.push(move)
-                    
+                    moveSound.play()
+                    #if (board.is_checkmate()): badSound.play()
                     turn = 'WHITE'
 
                     #screen.fill((202, 228, 241))
-                    pygame.draw.rect(screen,(202, 228, 241),(0,0,610,800))
+                    pygame.draw.rect(screen,(202, 228, 241),(25,25,590,800))
+                    #print(pos_x, pos_y)
                     pygame.draw.rect(screen,(202, 228, 241),(610, 150, 1000, 800))
+
+                    
                     chess_board_img = update_board_white(board, [])
                     
                     
@@ -640,6 +725,8 @@ class PlayScreen():
                                         if (piece.isupper()): loot_piece[0].append(piece)
                                         else: loot_piece[1].append(piece)
                                     board.push(move)
+                                    moveSound.play()
+                                    #if (board.is_checkmate()): goodSound.play()
                                     turn = 'BLACK'
                                     legal_moves = []
                                     state = 0
@@ -662,6 +749,9 @@ class PlayScreen():
                                                 if (piece.isupper()): loot_piece[0].append(piece)
                                                 else: loot_piece[1].append(piece)
                                             board.push(move)
+                                            
+                                            moveSound.play()
+                                            #if (board.is_checkmate()): goodSound.play()
                                             chess_board_img = update_board_white(board, [])
                                             legal_moves = []
                                             break
@@ -680,7 +770,8 @@ class PlayScreen():
                         if (state == 0): 
                             
                             #screen.fill((202, 228, 241))
-                            pygame.draw.rect(screen,(202, 228, 241),(0,0,610,800))
+                            print('run')
+                            pygame.draw.rect(screen,(202, 228, 241),(25, 25,590,800))
                             pygame.draw.rect(screen,(202, 228, 241),(610, 150, 1000, 800))
                             if (btnUndo.draw(screen)): 
                                 try:
@@ -705,14 +796,17 @@ class PlayScreen():
 
                             if (moves == [] and get_win_or_lose(board, firstTurn) == 0):
                                 screen.blit(draw, (60, 180))
+                                winSound.play()
                                 running = False
                                 break
 
                             if (get_win_or_lose(board, firstTurn) == 1): 
                                 screen.blit(win, (40, 150))
+                                winSound.play()
                                 
                             if (get_win_or_lose(board, firstTurn) == 2): 
                                 screen.blit(lose, (40, 150))
+                                loseSound.play()
                             running = False
                             break   
 
