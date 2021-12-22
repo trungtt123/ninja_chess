@@ -478,8 +478,9 @@ class PlayScreen():
                 pygame.display.update()
                 if (turn == 'WHITE' and board.is_game_over() == False):
                     #time.sleep(1)
-                    move = chessai.Solve().get_ai_move(board)
-                    
+                    # CALL AI
+                    AI = chessai.Solve()
+                    move = AI.get_ai_move(board, data['Level'], firstTurn)
                 
                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                     if (piece != 'None'): 
@@ -659,7 +660,8 @@ class PlayScreen():
                 if (turn == 'BLACK' and board.is_game_over() == False):
                     
                     # ----------CALL AI-----------
-                    move = chessai.Solve().get_ai_move(board)  
+                    AI = chessai.Solve()
+                    move = AI.get_ai_move(board, data['Level'], firstTurn)
 
                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                     if (piece != 'None'): 

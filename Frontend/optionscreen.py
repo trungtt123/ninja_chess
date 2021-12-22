@@ -89,7 +89,11 @@ class OptionScreen():
                 if (listTime.main == 'Tinh thoi gian'):
                     data['Time'] = True
                 else: data['Time'] = False
-                
+
+                if listLevel.main == 'Easy': data['Level'] = 1
+                if listLevel.main == 'Medium': data['Level'] = 2
+                if listLevel.main == 'Hard': data['Level'] = 3
+
                 f = open('option.json', mode='w+')
                 json.dump(data, f)
                 f.close()
