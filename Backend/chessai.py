@@ -1,8 +1,6 @@
 import random
 import chess
 import numpy
-import time
-import pygame
 import tensorflow.keras.models as models
 import tensorflow
 
@@ -11,9 +9,7 @@ import tensorflow
 # #with arg_scope([layers.conv2d], activation_fn=self.activation_fn, data_format="NHWC"), \
 # #        arg_scope([layers.fully_connected], activation_fn=self.activation_fn):
 
-model = models.load_model("D:/PythonProject/ninja_chess/Backend/model.h5")
-#with tensorflow.device('/cpu:0'):
-#     model.compile(loss='binary_crossentropy', optimizer='Adam', metrics=['acc'])
+model = models.load_model("D:/PythonProject/ninja_chess/Backend/model.h5", compile=True)
 
 squares_index = {
          'a': 0,
@@ -33,10 +29,10 @@ class Solve():
         if first_player == "BLACK":
             maximizing_player = True
         if level == 2:
-            return self.minimax(board, random.randrange(3,5,1), 0, 100000, maximizing_player, level)[0]
-        if level == 3:
             return self.minimax(board, 1, 0, 1, maximizing_player, level)[0]
-        return self.minimax(board, random.randrange(2,4,1), 0, 100000, maximizing_player, level)[0]
+        if level == 3:
+            return self.minimax(board, 2, 0, 1, maximizing_player, level)[0]
+        return self.minimax(board, random.randrange(3, 5, 1), 0, 100000, maximizing_player, level)[0]
 
     def square_to_index(self, board):
          letter = chess.square_name(board)
@@ -99,7 +95,7 @@ class Solve():
          return S
 
     def evaluate(self, board, level):
-        if level == 3:
+        if level != 1:
             board3d = self.split_dims(board)
             board3d = numpy.expand_dims(board3d, 0)
             return model.predict(board3d)[0][0]
