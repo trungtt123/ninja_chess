@@ -8,7 +8,7 @@ from pygame import draw
 pygame.display.set_caption('Ninja Chess')
 
 currentScreen = 'MENU_SCREEN'
-
+pygame.init()
 pygame.mixer.init()
 soundObj = pygame.mixer.Sound('../audio/music_1.mp3');
 soundObj.play(loops=-1)

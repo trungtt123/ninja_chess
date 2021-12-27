@@ -44,7 +44,6 @@ class OptionScreen():
 
         # game loop
 
-
         def update_option_frame_img(time, volume):
             option_frame_img = pygame.image.load('../images/chess/Chess_board/option_frame.png').convert_alpha()
             option_frame_img = pygame.transform.scale(option_frame_img, (700, 500))
@@ -77,38 +76,64 @@ class OptionScreen():
         [COLOR_LIST_INACTIVE, COLOR_LIST_ACTIVE],
         425, 250, 150, 30, 
         pygame.font.SysFont(None, 20), 
-        "Config Level", ["Easy", "Medium", "Hard"])
+        "Chon muc do", ["Easy", "Medium", "Hard"])
 
         run = True
+        isSelected = False
         while run:
             #clock.tick(30)
             screen.fill((202, 228, 241))
             screen.blit(option_frame_img, (150, 0))
             if (btnBack.draw(screen)):
+                print(isSelected)
                 run = False
-                if (listTime.main == 'Tinh thoi gian'):
-                    data['Time'] = True
-                else: data['Time'] = False
-
-                if listLevel.main == 'Easy': data['Level'] = 1
-                if listLevel.main == 'Medium': data['Level'] = 2
-                if listLevel.main == 'Hard': data['Level'] = 3
-
-                f = open('option.json', mode='w+')
-                json.dump(data, f)
-                f.close()
+                if (isSelected): 
+                    if (listTime.main == 'Tinh thoi gian'):
+                        data['Time'] = True
+                    else: data['Time'] = False
+                    if (listLevel.main == 'Easy'): data['Level'] = 0
+                    if (listLevel.main == 'Medium'): data['Level'] = 1
+                    if (listLevel.main == 'Hard'): data['Level'] = 2
+                    data['CurrentBoard'] = None
+                    data['FirstTurn'] = None
+                    data['Turn'] = None
+                    data['LootPiece'] = [[], []]
+                    data['Clock_1'] = None
+                    data['Clock_2'] = None
+                    f = open('option.json', mode='w+')
+                    json.dump(data, f)
+                    f.close()
                 return 'MENU_SCREEN'
             event_list = pygame.event.get()
             for event in event_list:
                 if event.type == pygame.QUIT:
                     run = False
+                    if (isSelected):
+                        if (listTime.main == 'Tinh thoi gian'):
+                            data['Time'] = True
+                        else: data['Time'] = False
+                        if (listLevel.main == 'Easy'): data['Level'] = 0
+                        if (listLevel.main == 'Medium'): data['Level'] = 1
+                        if (listLevel.main == 'Hard'): data['Level'] = 2
+                        data['CurrentBoard'] = None
+                        data['FirstTurn'] = None
+                        data['Turn'] = None
+                        data['LootPiece'] = [[], []]
+                        data['Clock_1'] = None
+                        data['Clock_2'] = None
+                        f = open('option.json', mode='w+')
+                        json.dump(data, f)
+                        f.close()
+                    pygame.quit()
 
             selected_option_time = listTime.update(event_list)
             if selected_option_time >= 0:
+                isSelected = True
                 listTime.main = listTime.options[selected_option_time]
 
             selected_option_level = listLevel.update(event_list)
             if selected_option_level >= 0:
+                isSelected = True
                 listLevel.main = listLevel.options[selected_option_level]
 
             #screen.fill((202, 228, 241))
@@ -119,7 +144,7 @@ class OptionScreen():
         
         
 
-
+        
         #pygame.quit()
         #exit()
         #while (running):
