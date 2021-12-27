@@ -1,6 +1,7 @@
 from os import stat
 import pygame
 from pygame import draw
+from pygame.display import update
 import button
 import random
 import chess
@@ -24,9 +25,11 @@ class PlayScreen():
         
         data = json.load(f)
         f.close()
-        pygame.init()
-        board = chess.Board()
-        print(chess.Board())
+        #pygame.init()
+        board_fen = data['CurrentBoard']
+        if (board_fen == None): board_fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+        board = chess.Board(board_fen)
+        #print(board.fen())
         SCREEN_HEIGHT = 600
         SCREEN_WIDTH = 1000
         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -345,21 +348,44 @@ class PlayScreen():
         btnWhite = button.Button(410, 190, btnWhite, 0.8)
 
         btnBlack = button.Button(530, 190, btnBlack, 0.8)
-        firstTurn = 'None'
-        turn = 'WHITE'
+        firstTurn = data['FirstTurn']
+        turn = data['Turn']
+        loot_piece = data['LootPiece']
+        level = data['Level']
+        if turn == None: turn = 'WHITE'
+        
+        def update_data(currentBoard, firstTurn, turn, lootPiece, clock_1, clock_2):
+            f = open('option.json', mode="w+")
+            try:
+                data['CurrentBoard'] = currentBoard.fen()
+                data['FirstTurn'] = firstTurn
+                data['Turn'] = turn
+                data['LootPiece'] = lootPiece
+                data['Clock_1'] = clock_1
+                data['Clock_2'] = clock_2
+            except:
+                data['CurrentBoard'] = None
+                data['FirstTurn'] = None
+                data['Turn'] = None
+                data['LootPiece'] = [[], []]
+                data['Clock_1'] = None
+                data['Clock_2'] = None
+            json.dump(data, f)
 
+            f.close()
 
-        while (firstTurn == 'None'):
+        while (firstTurn == None):
             
-
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    update_data(board, firstTurn, turn, loot_piece, None, None)
+                    return 'EXIT'
                     pygame.quit()
                 screen.fill((202, 228, 241))
                 
                 screen.blit(boxConfirm, (360, 100))
-                if (btnBack.draw(screen)):
-                    return 'MENU_SCREEN'
+                # if (btnBack.draw(screen)):
+                #     return 'MENU_SCREEN'
                 if (btnWhite.draw(screen)):
                     firstTurn = 'WHITE'
                 if (btnBlack.draw(screen)):
@@ -371,7 +397,7 @@ class PlayScreen():
         
         screen.fill((202, 228, 241))
         
-        screen.blit(boxContain, (580, 150))
+        #screen.blit(boxContain, (580, 150))
         
         #button in screen
         btnQueen = button.Button(20 , 140, btnQueen, 0.12)
@@ -396,8 +422,7 @@ class PlayScreen():
         running = True
 
         font = pygame.font.Font('freesansbold.ttf', 15)
-        def get_ai_move(board):
-            return chessai.Solve().get_ai_move(board)
+        
         
         def get_time_after_1s(seconds):
             seconds -= 1
@@ -409,12 +434,8 @@ class PlayScreen():
             if (0 <= minutes <= 9): minutes = '0' + str(minutes)
             if (0 <= hours <= 9): hours = '0' + str(hours)
             return str(hours) + ":" + str(minutes) + ":" + str(secs)
-        resultByTime = -1
-        def solve_clock(m):
-            m1 = m
-            m2 = m
-            
-            global resultByTime
+        
+        def solve_clock(m1, m2):   
 
             while (running == True):
                 clock1 = font.render(get_time_after_1s(m1), True, 'black')
@@ -424,63 +445,92 @@ class PlayScreen():
                 else: m2 -= 1 
                  
                 
-                pygame.draw.rect(screen,(202, 228, 241),(610, 0, 610, 100))
+                pygame.draw.rect(screen,(202, 228, 241),(610, 0, 610, 170))
              
-                screen.blit(myClock, (620, 50))
+                screen.blit(myClock, (620, 110))
 
-                screen.blit(clock1, (670, 64))
+                screen.blit(clock1, (670, 124))
 
-                screen.blit(myClock, (820, 50))
+                screen.blit(myClock, (820, 110))
 
-                screen.blit(clock2, (870, 64))
+                screen.blit(clock2, (870, 124))
                 
                 pygame.display.update()
                 
-                print(m1, m2)
-                if m2 == 0: 
-                    return 1
-                if m1 == 0: 
-                    print('abc')
-                    return 0 
+                #print(m1, m2)
+                if (m1 * m2 == 0):
+                    return (m1, m2) 
                 time.sleep(1)               
-            return -1
-       
+            return (m1, m2)
+        def get_move_ai(board, level, firstTurn):
+            if (running == True):
+                return chessai.Solve().get_ai_move(board, level, firstTurn)
         t1 = None
-        if (data['Time']): t1 = concurrent.futures.ThreadPoolExecutor().submit(solve_clock, data['LimitTime'] + 1)
+        if (data['Time']): 
+            if (data['Clock_1'] == None or data['Clock_2'] == None):
+                t1 = concurrent.futures.ThreadPoolExecutor().submit(solve_clock, data['LimitTime'] + 1, data['LimitTime'] + 1)
+            else: t1 = concurrent.futures.ThreadPoolExecutor().submit(solve_clock, data['Clock_1'], data['Clock_2']) 
        
         state = 0 # - 1 phong tướng, 0 khác th phong tướng
         legal_moves = []
-        loot_piece = [[],[]]
         
+        
+        #print(ai_running.result())
         
         if (firstTurn == 'BLACK'): 
+            ai_running = None 
+            #print(turn)
+            if (turn == 'WHITE'):  
+                ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
             chess_board_img = update_board_black(board, [])
             screen.blit(chess_board_img, (30, 50))
+            boxContain = update_box_contain(loot_piece, firstTurn)
+            screen.blit(boxContain, (580, 150))
             pygame.display.update()
             while (running):
                 pygame.draw.rect(screen,(202, 228, 241),(0, 0, 50, 50))
+                if (btnBack.draw(screen)):
+                    running = False
+                    if (t1 != None):
+                        update_data(board, firstTurn, turn, loot_piece, t1.result()[0], t1.result()[1])
+                    else:
+                        update_data(board, firstTurn, turn, loot_piece, None, None)
+
+                    return 'MENU_SCREEN'
+                pygame.display.update()
+                if (ai_running != None):
+                    if (ai_running.running() == True): 
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                running = False
+                                return 'EXIT'
+                                pygame.quit()
+                        continue
                 if (data['Time'] and t1.running() == False):
-                    if (t1.result() == 1):
+                    if (t1.result()[1] == 0):
                         screen.blit(win, (40, 150))
                         winSound.play()
                         
-                    if (t1.result() == 0):
+                    if (t1.result()[0] == 0):
                         screen.blit(lose, (40, 150))
                         loseSound.play()
                     running = False
                     pygame.display.update()
+                    update_data(None, None, None, [[], []], None, None)
                     pygame.time.delay(5000)
                     return 'PLAY_SCREEN'
                     
-                if (btnBack.draw(screen)):
-                    running = False
-                    return 'MENU_SCREEN'
-                pygame.display.update()
+                
                 if (turn == 'WHITE' and board.is_game_over() == False):
                     #time.sleep(1)
-                    # CALL AI
-                    AI = chessai.Solve()
-                    move = AI.get_ai_move(board, data['Level'], firstTurn)
+                    #print('run here')
+                    
+                    
+                    if (ai_running != None and ai_running.running() == False):
+                        move = ai_running.result()
+                    else: continue  
+                    
+                    
                 
                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                     if (piece != 'None'): 
@@ -508,7 +558,7 @@ class PlayScreen():
                             if (piece != 'None' and piece.isupper() == False): loot_piece[1].pop()
                             
                             chess_board_img = update_board_black(board, [])
-                        except: print('do not have front move')
+                        except: print('do not have front move 123')
                         print(loot_piece)
                     boxContain = update_box_contain(loot_piece, firstTurn)
                     screen.blit(boxContain, (580, 150))
@@ -518,8 +568,10 @@ class PlayScreen():
                 for event in pygame.event.get():
                     
                     if event.type == pygame.QUIT:
-                        #running = False
+                        running = False
+                        update_data(board, firstTurn, turn, loot_piece, t1.result()[0], t1.result()[1])
                         pygame.quit()
+                        return 'EXIT'
                     
                     if event.type == pygame.MOUSEBUTTONDOWN:
 
@@ -548,6 +600,7 @@ class PlayScreen():
                                     turn = 'WHITE'
                                     legal_moves = []
                                     state = 0
+                                    ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
                                     break
 
                         x = 8 - int ((pos_x - 40) / 60) 
@@ -564,7 +617,6 @@ class PlayScreen():
                                     if (len(str(move)) == 4):
                                         if (str(move)[2:4] == pos): 
                                             turn = 'WHITE'
-                                            
                                             piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                                             print(piece)
                                             if (piece != 'None'): 
@@ -575,6 +627,7 @@ class PlayScreen():
                                             #if (board.is_checkmate()): goodSound.play()
                                             chess_board_img = update_board_black(board, [])
                                             legal_moves = []
+                                            ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
                                             break
                                     if (len(str(move)) == 5):
                                         if (str(move)[2:4] == pos):
@@ -596,13 +649,14 @@ class PlayScreen():
                             if (btnUndo.draw(screen)): 
                                 try:
                                     move = board.pop()
+                                
                                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                                     if (piece != 'None' and piece.isupper()): loot_piece[0].pop()
-                                    
-                                    move = board.pop()
-                                    piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
-                                    if (piece != 'None' and piece.isupper() == False): loot_piece[1].pop()
-                                    
+                                    try:
+                                        move = board.pop()
+                                        piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
+                                        if (piece != 'None' and piece.isupper() == False): loot_piece[1].pop()
+                                    except: board.push(move)
                                     chess_board_img = update_board_black(board, [])
                                 except: print('do not have front move')
                                 print(loot_piece)
@@ -630,38 +684,73 @@ class PlayScreen():
                                 loseSound.play()
                             running = False
                             break   
+                
+                      
                 pygame.display.update()
                 if (running == False): 
+                    update_data(None, None, None, [[], []], None, None)
                     pygame.time.delay(5000)
                     return 'PLAY_SCREEN'
         else: 
+            #ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level)
+            ai_running = None
+            print(turn)
+            if (turn == 'BLACK'): 
+                ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
             chess_board_img = update_board_white(board, [])
             screen.blit(chess_board_img, (30, 50))
+            boxContain = update_box_contain(loot_piece, firstTurn)
+            screen.blit(boxContain, (580, 150))
             pygame.display.update()
             while (running):
+                pygame.draw.rect(screen,(202, 228, 241),(0, 0, 50, 50))
+                if (btnBack.draw(screen)):
+                    running = False
+                    if (t1 != None):
+                        update_data(board, firstTurn, turn, loot_piece, t1.result()[0], t1.result()[1])
+                    else:
+                        update_data(board, firstTurn, turn, loot_piece, None, None)
+                    return 'MENU_SCREEN'
+                pygame.display.update()
+                if (ai_running != None):
+                    if (ai_running.running() == True): 
+                        for event in pygame.event.get():
+                            if event.type == pygame.QUIT:
+                                print('hello')
+                                running = False
+                                pygame.quit()
+                                return 'EXIT'
+                        continue
                 if (data['Time'] and t1.running() == False):
-                    if (t1.result() == 1):
+                    if (t1.result()[1] == 0):
                         screen.blit(win, (40, 150))
                         winSound.play()
                         
-                    if (t1.result() == 0):
+                    if (t1.result()[0] == 0):
                         screen.blit(lose, (40, 150))
                         loseSound.play()
                     running = False
                     pygame.display.update()
+                    update_data(None, None, None, [[], []], None, None)
                     pygame.time.delay(5000)
                     return 'PLAY_SCREEN'
                 pygame.draw.rect(screen,(202, 228, 241),(0, 0, 50, 50))
                 
                 if (btnBack.draw(screen)):
+                    print('running')
                     running = False
+                    if (t1 != None):
+                        update_data(board, firstTurn, turn, loot_piece, t1.result()[0], t1.result()[1])
+                    else:
+                        update_data(board, firstTurn, turn, loot_piece, None, None)
                     return 'MENU_SCREEN'
                 pygame.display.update()
                 if (turn == 'BLACK' and board.is_game_over() == False):
                     
                     # ----------CALL AI-----------
-                    AI = chessai.Solve()
-                    move = AI.get_ai_move(board, data['Level'], firstTurn)
+                    if (ai_running != None and ai_running.running() == False):
+                        move = ai_running.result()
+                    else: continue
 
                     piece = str(board.piece_at(chess.parse_square(str(move)[2:4])))
                     if (piece != 'None'): 
@@ -702,8 +791,10 @@ class PlayScreen():
                 for event in pygame.event.get():
                     
                     if event.type == pygame.QUIT:
-                        #running = False
+                        running = False
+                        update_data(board, firstTurn, turn, loot_piece, t1.result()[0], t1.result()[1])
                         pygame.quit()
+                        return 'EXIT'
                     
                     if event.type == pygame.MOUSEBUTTONDOWN:
 
@@ -730,6 +821,7 @@ class PlayScreen():
                                     moveSound.play()
                                     #if (board.is_checkmate()): goodSound.play()
                                     turn = 'BLACK'
+                                    ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
                                     legal_moves = []
                                     state = 0
                                     break
@@ -751,7 +843,7 @@ class PlayScreen():
                                                 if (piece.isupper()): loot_piece[0].append(piece)
                                                 else: loot_piece[1].append(piece)
                                             board.push(move)
-                                            
+                                            ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
                                             moveSound.play()
                                             #if (board.is_checkmate()): goodSound.play()
                                             chess_board_img = update_board_white(board, [])
@@ -816,6 +908,7 @@ class PlayScreen():
                         
                 pygame.display.update()
                 if (running == False): 
+                    update_data(None, None, None, [[], []], None, None)
                     pygame.time.delay(5000)
                     return 'PLAY_SCREEN'
        
