@@ -2,6 +2,7 @@ import random
 import chess
 import numpy
 import tensorflow.keras.models as models
+import pygame
 import tensorflow
 
 # # with arg_scope([layers.conv2d], activation_fn=self.activation_fn, data_format="NCHW"), \
@@ -9,7 +10,7 @@ import tensorflow
 # #with arg_scope([layers.conv2d], activation_fn=self.activation_fn, data_format="NHWC"), \
 # #        arg_scope([layers.fully_connected], activation_fn=self.activation_fn):
 
-model = models.load_model("../model.h5", compile=True)
+
 
 squares_index = {
          'a': 0,
@@ -21,19 +22,26 @@ squares_index = {
          'g': 6,
          'h': 7
      }
-
+model = models.load_model("../model.h5", compile=True)
 class Solve():
     # example: h3 -> 17
+
     def get_ai_move(self, board, level, first_player):
+        pygame.time.delay(100)
         maximizing_player = False
         if first_player == "BLACK":
             maximizing_player = True
         if level == 2:
-            return self.minimax(board, 1, 0, 1, maximizing_player, level)[0]
+
+            move = self.minimax(board, 1, 0, 1, maximizing_player, level)[0]
+            print(move)
+            return move
+            # random.choice(list(board.legal_moves))
         if level == 3:
             return self.minimax(board, 2, 0, 1, maximizing_player, level)[0]
-        return self.minimax(board, random.randrange(3, 5, 1), 0, 100000, maximizing_player, level)[0]
-
+        move = self.minimax(board, random.randrange(3, 5, 1), 0, 100000, maximizing_player, level)[0]
+        #
+        return move
     def square_to_index(self, board):
          letter = chess.square_name(board)
          return 8 - int(letter[1]), squares_index[letter[0]]

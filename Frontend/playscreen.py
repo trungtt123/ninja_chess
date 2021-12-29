@@ -20,7 +20,7 @@ import chessai #import backend
 
 class PlayScreen():
 
-    def run():   
+    def run():
         f = open('option.json', mode="r")
         
         data = json.load(f)
@@ -478,8 +478,7 @@ class PlayScreen():
         #print(ai_running.result())
         
         if (firstTurn == 'BLACK'): 
-            ai_running = None 
-            #print(turn)
+            ai_running = None
             if (turn == 'WHITE'):  
                 ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
             chess_board_img = update_board_black(board, [])
@@ -506,6 +505,8 @@ class PlayScreen():
                                 return 'EXIT'
                                 pygame.quit()
                         continue
+                        print('hello ha di')
+
                 if (data['Time'] and t1.running() == False):
                     if (t1.result()[1] == 0):
                         screen.blit(win, (40, 150))
@@ -702,6 +703,7 @@ class PlayScreen():
             boxContain = update_box_contain(loot_piece, firstTurn)
             screen.blit(boxContain, (580, 150))
             pygame.display.update()
+
             while (running):
                 pygame.draw.rect(screen,(202, 228, 241),(0, 0, 50, 50))
                 if (btnBack.draw(screen)):
@@ -713,10 +715,10 @@ class PlayScreen():
                     return 'MENU_SCREEN'
                 pygame.display.update()
                 if (ai_running != None):
-                    if (ai_running.running() == True): 
+                    if (ai_running.running() == True):
+
                         for event in pygame.event.get():
                             if event.type == pygame.QUIT:
-                                print('hello')
                                 running = False
                                 pygame.quit()
                                 return 'EXIT'
@@ -843,6 +845,7 @@ class PlayScreen():
                                                 if (piece.isupper()): loot_piece[0].append(piece)
                                                 else: loot_piece[1].append(piece)
                                             board.push(move)
+                                            print('hello ha')
                                             ai_running = concurrent.futures.ThreadPoolExecutor().submit(get_move_ai, board, level, firstTurn)
                                             moveSound.play()
                                             #if (board.is_checkmate()): goodSound.play()

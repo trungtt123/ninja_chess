@@ -69,14 +69,14 @@ class OptionScreen():
         [COLOR_LIST_INACTIVE, COLOR_LIST_ACTIVE],
         425, 200, 150, 30, 
         pygame.font.SysFont(None, 20), 
-        "Cai dat thoi gian", ["Tinh thoi gian", "Khong tinh thoi gian"])
+        "Time", ["5 minutes", "10 minutes", "20 minutes", "unlimited"])
 
         listLevel = dropdown.DropDown(
         [COLOR_INACTIVE, COLOR_ACTIVE],
         [COLOR_LIST_INACTIVE, COLOR_LIST_ACTIVE],
         425, 250, 150, 30, 
         pygame.font.SysFont(None, 20), 
-        "Chon muc do", ["Easy", "Medium", "Hard"])
+        "Level", ["Easy", "Medium", "Hard"])
 
         run = True
         isSelected = False
@@ -88,12 +88,15 @@ class OptionScreen():
                 print(isSelected)
                 run = False
                 if (isSelected): 
-                    if (listTime.main == 'Tinh thoi gian'):
+                    if (listTime.main != 'unlimited'):
                         data['Time'] = True
+                        if (listTime.main == '5 minutes'): data['LimitTime'] = 300
+                        if (listTime.main == '10 minutes'): data['LimitTime'] = 600
+                        if (listTime.main == '20 minutes'): data['LimitTime'] = 1200
                     else: data['Time'] = False
-                    if (listLevel.main == 'Easy'): data['Level'] = 0
-                    if (listLevel.main == 'Medium'): data['Level'] = 1
-                    if (listLevel.main == 'Hard'): data['Level'] = 2
+                    if (listLevel.main == 'Easy'): data['Level'] = 1
+                    if (listLevel.main == 'Medium'): data['Level'] = 2
+                    if (listLevel.main == 'Hard'): data['Level'] = 3
                     data['CurrentBoard'] = None
                     data['FirstTurn'] = None
                     data['Turn'] = None
@@ -109,12 +112,15 @@ class OptionScreen():
                 if event.type == pygame.QUIT:
                     run = False
                     if (isSelected):
-                        if (listTime.main == 'Tinh thoi gian'):
+                        if (listTime.main != 'unlimited'):
                             data['Time'] = True
+                            if (listTime.main == '5 minutes'): data['LimitTime'] = 300
+                            if (listTime.main == '10 minutes'): data['LimitTime'] = 600
+                            if (listTime.main == '20 minutes'): data['LimitTime'] = 1200
                         else: data['Time'] = False
-                        if (listLevel.main == 'Easy'): data['Level'] = 0
-                        if (listLevel.main == 'Medium'): data['Level'] = 1
-                        if (listLevel.main == 'Hard'): data['Level'] = 2
+                        if (listLevel.main == 'Easy'): data['Level'] = 1
+                        if (listLevel.main == 'Medium'): data['Level'] = 2
+                        if (listLevel.main == 'Hard'): data['Level'] = 3
                         data['CurrentBoard'] = None
                         data['FirstTurn'] = None
                         data['Turn'] = None
