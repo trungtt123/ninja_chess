@@ -4,4 +4,3 @@ numpy
 tensorflow
 tensorflow-gpu
 keras
---extra-index-url https://pypi.ngc.nvidia.com

@@ -9,7 +9,7 @@ import tensorflow
 # #with arg_scope([layers.conv2d], activation_fn=self.activation_fn, data_format="NHWC"), \
 # #        arg_scope([layers.fully_connected], activation_fn=self.activation_fn):
 
-model = models.load_model("D:/PythonProject/ninja_chess/Backend/model.h5", compile=True)
+model = models.load_model("../model.h5", compile=True)
 
 squares_index = {
          'a': 0,
